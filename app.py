@@ -22,22 +22,40 @@ with col2:
     tol = st.number_input("Tolerance level:", value=0.00001, step=0.00001, format="%.5f")
 
 if st.button("Calculate", type="primary"):
+    # Initialize tracking variables
     iterations = []
     t_current = t
     iteration = 0
     
+    # Newton's Method iterative loop
     while True:
-        t_new = t_current - f(t_current)/fp(t_current)
-        iteration += 1
+        # Calculate function and derivative values
+        f_val = f(t_current)
+        fp_val = fp(t_current)
+        
+        # Apply Newton's formula: t_new = t - f(t)/f'(t)
+        t_new = t_current - f_val/fp_val
+        
+        # Calculate relative error: |ε| = (xₖ₊₁ - xₖ) / xₖ₊₁
+        error = abs((t_new - t_current) / t_new) if t_new != 0 else 0
+        
+        # Store iteration data for display
         iterations.append({
-            "Iteration": iteration,
-            "t": f"{t_new:.8f}",
-            "f(t)": f"{f(t_new):.8f}",
-            "|Error|": f"{abs(t_new - t_current):.8f}"
+            "k": iteration,
+            "xₖ": f"{t_current:.5f}",
+            "f(xₖ)": f"{f_val:.5f}",
+            "f'(xₖ)": f"{fp_val:.5f}",
+            "xₖ₊₁": f"{t_new:.5f}",
+            "|εr|": f"{error:.5f}"
         })
         
-        if abs(t_new - t_current) < tol:
+        iteration += 1
+        
+        # Check convergence: stop if change is less than tolerance
+        if error < tol:
             break
+        
+        # Update current value for next iteration
         t_current = t_new
     
     st.success(f"✅ Root found at **t ≈ {t_new:.8f}** in {iteration} iterations")
@@ -84,9 +102,9 @@ if st.button("Calculate", type="primary"):
     
     # Graph 3: Convergence of iterations
     st.markdown("### 🎯 Convergence Analysis")
-    iteration_nums = [item["Iteration"] for item in iterations]
-    t_values = [float(item["t"]) for item in iterations]
-    errors = [float(item["|Error|"]) for item in iterations]
+    iteration_nums = [item["k"] for item in iterations]
+    t_values = [float(item["xₖ₊₁"]) for item in iterations]
+    errors = [float(item["|εr|"]) for item in iterations]
     
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(14, 5))
     
